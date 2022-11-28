@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_background"
+    tools:context=".MainActivity">
+
+
+    <ImageButton
+        android:id="@+id/ibPlay"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="-10dp"
+        android:layout_marginRight="0dp"
+        android:adjustViewBounds="true"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:onClick="startGame"
+        app:srcCompat="@drawable/play" />
+
+    <TextView
+        android:id="@+id/tvPlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ibPlay"
+        android:layout_alignStart="@+id/ibPlay"
+        android:layout_alignEnd="@+id/ibPlay"
+        android:layout_marginTop="10dp"
+        android:text="Play"
+        android:textAlignment="center"
+        android:textColor="@color/black" />
+</RelativeLayout>
