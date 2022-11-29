@@ -1,6 +1,7 @@
 package com.example.pajarovoladorhacendado;
 
 import android.content.Context;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -65,4 +66,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        //se ha tocado la pantalla
+        if(action == MotionEvent.ACTION_DOWN){
+            AppConstants.getGameEngine().gameState = 1;
+            AppConstants.getGameEngine().bird.setVelocity(AppConstants.VELOCITY_WHEN_JUMPED);
+        }
+
+        return true;
+    }
 }
