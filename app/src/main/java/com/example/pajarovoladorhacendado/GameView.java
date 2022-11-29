@@ -1,80 +1,171 @@
 package com.example.pajarovoladorhacendado;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-public class GameView extends SurfaceView implements SurfaceHolder.Callback {
+import java.util.ArrayList;
 
-    GameThread gameThread;
+public class GameView extends View {
 
-    public GameView(Context context) {
-        super(context);
-        initView();
+    private Bird bird;
+    private android.os.Handler handler;
+    private Runnable r;
+    private ArrayList<Pipe> arrPipes;
+    private int sumPipe, distance;
+    private int score, bestScore;
+    private boolean start;
+
+    public GameView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+
+        score = 0;
+        bestScore = 0;
+
+        start = false;
+
+        initBird();
+        initPipe();
+
+        handler = new Handler();
+
+        r = new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+            }
+        };
+
     }
 
-    @Override
-    public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-        if (!gameThread.isRunning()){
+    private void initPipe() {
 
-            gameThread = new GameThread(surfaceHolder);
-            gameThread.start();
+        sumPipe = 6;
+        distance = 300 * Constants.SCREEN_HEIGHT / 1920;
 
-        }else{
-            gameThread.start();
+        arrPipes = new ArrayList<>();
+
+        for (int i = 0; i < sumPipe; i++){
+            if(i < sumPipe / 2){
+                this.arrPipes.add(new Pipe(Constants.SCREEN_WIDTH + i * ((Constants.SCREEN_WIDTH + 200 * Constants.SCREEN_WIDTH / 1080) / (sumPipe / 2)),
+                        0, 200 * Constants.SCREEN_WIDTH / 1080, Constants.SCREEN_HEIGHT / 2));
+
+                this.arrPipes.get(this.arrPipes.size() - 1).setBm(BitmapFactory.decodeResource(this.getResources(), R.drawable.pipe_top));
+                this.arrPipes.get(this.arrPipes.size() - 1).randomY();
+            }else{
+                this.arrPipes.add(new Pipe(this.arrPipes.get(i - sumPipe / 2).getX(), this.arrPipes.get(i - sumPipe / 2).getY()
+                + this.arrPipes.get(i - sumPipe / 2).getHeight() + this.distance, 200 * Constants.SCREEN_WIDTH / 1080, Constants.SCREEN_HEIGHT / 2));
+
+                this.arrPipes.get(this.arrPipes.size() - 1).setBm(BitmapFactory.decodeResource(this.getResources(), R.drawable.pipe_bottom));
+            }
         }
-    }
-
-    @Override
-    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
 
     }
 
-    @Override
-    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-        if (gameThread.isRunning()){
+    private void initBird() {
 
-            gameThread.setIsRunning(false);
+        bird = new Bird();
 
-            boolean retry = true;
+        bird.setWidth(100 * Constants.SCREEN_WIDTH / 1080);
+        bird.setHeight(100 * Constants.SCREEN_HEIGHT / 1920);
+        bird.setX(100 * Constants.SCREEN_WIDTH / 1080);
+        bird.setY(Constants.SCREEN_HEIGHT / 2 - bird.getHeight() / 2);
 
-            while (retry){
+        ArrayList<Bitmap> arrBms = new ArrayList<>();
 
-                try {
+        arrBms.add(BitmapFactory.decodeResource(this.getResources(), R.drawable.flamingo));
+        arrBms.add(BitmapFactory.decodeResource(this.getResources(), R.drawable.flamingo_fly));
 
-                    gameThread.join();
-                    retry = false;
+        bird.setArrBms(arrBms);
 
-                }catch (InterruptedException e){
+    }
+
+    public void draw(Canvas canvas){
+
+        super.draw(canvas);
+
+
+        if(start){
+
+            bird.draw(canvas);
+
+            for (int i = 0; i < sumPipe; i++){
+
+                if(bird.getRect().intersect(arrPipes.get(i).getRect()) || bird.getY() - bird.getHeight() < 0 || bird.getY() > Constants.SCREEN_HEIGHT){
+
+                    Pipe.speed = 0;
+
+                    MainActivity.txt_score_over.setText(MainActivity.txt_score.getText());
+                    MainActivity.txt_best_score.setText("best: " + bestScore);
+                    MainActivity.txt_score.setVisibility(INVISIBLE);
+                    MainActivity.rl_game_over.setVisibility(VISIBLE);
 
                 }
 
+                if (this.bird.getX() + this.bird.getWidth() > arrPipes.get(i).getX() + arrPipes.get(i).getWidth() / 2
+                        && this.bird.getX() + this.bird.getWidth() <= arrPipes.get(i).getX() + arrPipes.get(i).getWidth() / 2 + Pipe.speed
+                        && i < sumPipe / 2){
+
+                    score++;
+                    MainActivity.txt_score.setText("" + score);
+
+                }
+
+                if (this.arrPipes.get(i).getX() < -arrPipes.get(i).getWidth()){
+                    this.arrPipes.get(i).setX(Constants.SCREEN_WIDTH);
+
+                    if (i < sumPipe / 2){
+                        arrPipes.get(i).randomY();
+                    }else{
+                        arrPipes.get(i).setY(this.arrPipes.get(i - sumPipe / 2).getY()
+                                + this.arrPipes.get(i - sumPipe / 2).getHeight() + this.distance);
+                    }
+                }
+                this.arrPipes.get(i).draw(canvas);
             }
+
+        }else{
+            if(bird.getY() > Constants.SCREEN_HEIGHT / 2){
+                bird.setDrop(-15 * Constants.SCREEN_HEIGHT / 1080);
+            }
+            bird.draw(canvas);
         }
-    }
 
-    public void initView(){
-
-        SurfaceHolder holder = getHolder();
-        holder.addCallback(this);
-        setFocusable(true);
-
-        gameThread = new GameThread(holder);
-
+        handler.postDelayed(r, 10);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-        //se ha tocado la pantalla
-        if(action == MotionEvent.ACTION_DOWN){
-            AppConstants.getGameEngine().gameState = 1;
-            AppConstants.getGameEngine().bird.setVelocity(AppConstants.VELOCITY_WHEN_JUMPED);
+
+        if(event.getAction() == MotionEvent.ACTION_DOWN){
+            bird.setDrop(-15);
         }
 
         return true;
+    }
+
+    public boolean isStart() {
+        return start;
+    }
+
+    public void setStart(boolean start) {
+        this.start = start;
+    }
+
+    public void reset() {
+        MainActivity.txt_score.setText("0");
+        score = 0;
+        initPipe();
+        initBird();
     }
 }

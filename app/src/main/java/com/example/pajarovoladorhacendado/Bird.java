@@ -1,49 +1,95 @@
 package com.example.pajarovoladorhacendado;
 
-public class Bird {
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
 
-    private int birdX, birdY, currentFrame, velocity;
+import java.util.ArrayList;
 
-    public static int maxFrame;
+public class Bird extends BaseObject{
+
+    private ArrayList<Bitmap> arrBms = new ArrayList<>();
+
+    private int count, vFlap, idCurrentbitmap;
+
+    private float drop;
 
     public Bird(){
-        birdX = AppConstants.SCREEN_WIDTH / 2  - AppConstants.getBitmapBank().getBirdWidth() / 2;
-        birdY = AppConstants.SCREEN_HEIGHT / 2 - AppConstants.getBitmapBank().getBirdHeight() / 2;
-        currentFrame = 0;
-        maxFrame = 3;
-        velocity = 0;
+        this.count = 0;
+        this.vFlap = 5;
+        this.idCurrentbitmap = 0;
+        this.drop = 0;
     }
 
-    public int getVelocity(){
-        return velocity;
+    public void draw(Canvas canvas){
+        drop();
+        canvas.drawBitmap(this.getBm(), this.x, this.y, null);
     }
 
-    public void setVelocity(int velocity){
-        this.velocity = velocity;
+    private void drop(){
+        this.drop += 0.6;
+        this.y += this.drop;
+
     }
 
-    public int getCurrentFrame(){
-        return currentFrame;
+    public ArrayList<Bitmap> getArrBms() {
+        return arrBms;
     }
 
-    public void setCurrentFrame(int currentFrame){
-        this.currentFrame = currentFrame;
+    public void setArrBms(ArrayList<Bitmap> arrBms) {
+        this.arrBms = arrBms;
+
+        for (int i = 0; i < arrBms.size(); i++){
+            this.arrBms.set(i, Bitmap.createScaledBitmap(this.arrBms.get(i), this.width, this.height, true));
+        }
     }
 
-    public int getX(){
-        return birdX;
+    @Override
+    public Bitmap getBm(){
+        count++;
+
+        if(this.count == this.vFlap){
+            for (int i = 0; i < arrBms.size(); i++){
+                if(i == arrBms.size() - 1){
+
+                    this.idCurrentbitmap = 0;
+                    break;
+                }else if (this.idCurrentbitmap == i){
+
+                    idCurrentbitmap = i + 1;
+                    break;
+                }
+            }
+            count = 0;
+        }
+
+        if(this.drop < 0){
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(-25);
+
+            return Bitmap.createBitmap(arrBms.get(idCurrentbitmap), 0, 0, arrBms.get(idCurrentbitmap).getWidth(), arrBms.get(idCurrentbitmap).getHeight(), matrix, true);
+        }else if(drop >= 0){
+
+            Matrix matrix = new Matrix();
+
+            if (drop < 70){
+                matrix.postRotate(-25 + (drop * 2));
+            }else{
+                matrix.postRotate(45);
+            }
+
+            return Bitmap.createBitmap(arrBms.get(idCurrentbitmap), 0, 0, arrBms.get(idCurrentbitmap).getWidth(), arrBms.get(idCurrentbitmap).getHeight(), matrix, true);
+        }
+
+        return this.arrBms.get(idCurrentbitmap);
     }
 
-    public void setX(int birdX){
-        this.birdX = birdX;
+    public float getDrop() {
+        return drop;
     }
 
-    public int getY(){
-        return birdY;
+    public void setDrop(float drop) {
+        this.drop = drop;
     }
-
-    public void setY(int birdY){
-        this.birdY = birdY;
-    }
-
 }

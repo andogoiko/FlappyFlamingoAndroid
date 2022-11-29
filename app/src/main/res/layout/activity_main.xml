@@ -7,29 +7,75 @@
     android:background="@drawable/main_background"
     tools:context=".MainActivity">
 
-
-    <ImageButton
-        android:id="@+id/ibPlay"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_centerInParent="true"
-        android:layout_marginTop="-10dp"
-        android:layout_marginRight="0dp"
-        android:adjustViewBounds="true"
-        android:background="@null"
-        android:scaleType="fitCenter"
-        android:onClick="startGame"
-        app:srcCompat="@drawable/play" />
+    <com.example.pajarovoladorhacendado.GameView
+        android:id="@+id/gv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <TextView
-        android:id="@+id/tvPlay"
+        android:visibility="invisible"
+        android:id="@+id/txt_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ibPlay"
-        android:layout_alignStart="@+id/ibPlay"
-        android:layout_alignEnd="@+id/ibPlay"
-        android:layout_marginTop="10dp"
-        android:text="Play"
-        android:textAlignment="center"
-        android:textColor="@color/black" />
+        android:textColor="#002247"
+        android:textSize="50sp"
+        android:text="0"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
+
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Empezar"
+        android:padding="5dp"
+        android:layout_centerInParent="true"
+        android:background="#ffffff"
+        android:textColor="#000000" />
+    
+    <RelativeLayout
+        android:id="@+id/rl_game_over"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/txt_game_over"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Has perdido"
+                android:textSize="50sp"
+                android:layout_centerInParent="true"
+                android:textColor="#ff00"
+                />
+            <TextView
+                android:id="@+id/txt_score_over"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="100sp"
+                android:textColor="#ff00"
+                android:layout_marginTop="50dp"
+                android:layout_centerHorizontal="true"
+                />
+            <TextView
+                android:id="@+id/txt_best_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="best: 0"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/txt_score_over"
+                android:layout_marginTop="30dp"
+                android:textSize="20sp"
+                />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toca la pantalla para continuar"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/txt_game_over"
+            android:layout_marginTop="20dp"
+            android:textColor="#ff5722"
+            />
+    </RelativeLayout>
+    
 </RelativeLayout>
