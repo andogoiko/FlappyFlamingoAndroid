@@ -1,10 +1,15 @@
 package com.example.pajarovoladorhacendado;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -23,14 +28,26 @@ public class GameView extends View {
     private Runnable r;
     private ArrayList<Pipe> arrPipes;
     private int sumPipe, distance;
-    private int score, bestScore;
+    private int score, bestScore = 0;
     private boolean start;
+    private Context context;
+    private int soundJump;
+    private float volume;
+    private boolean loadedSound;
+    private SoundPool soundPool;
 
     public GameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
+        this.context = context;
+
+        SharedPreferences sp = context.getSharedPreferences("gamesetting", Context.MODE_PRIVATE);
+
+        if(sp != null){
+            bestScore = sp.getInt("bestscore", 0);
+        }
+
         score = 0;
-        bestScore = 0;
 
         start = false;
 
@@ -45,6 +62,26 @@ public class GameView extends View {
                 invalidate();
             }
         };
+
+        if(Build.VERSION.SDK_INT >= 21){
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+
+            SoundPool.Builder builder = new SoundPool.Builder();
+            builder.setAudioAttributes(audioAttributes).setMaxStreams(5);
+            this.soundPool = builder.build();
+        }else{
+            soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
+        }
+        this.soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int i, int i1) {
+                loadedSound = true;
+            }
+        });
+        soundJump = this.soundPool.load(context, R.raw.jump_02, 1);
 
     }
 
@@ -117,6 +154,15 @@ public class GameView extends View {
                         && i < sumPipe / 2){
 
                     score++;
+
+                    if(score > bestScore){
+                        bestScore = score;
+                        SharedPreferences sp = context.getSharedPreferences("gamesetting", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putInt("bestscore", bestScore);
+                        editor.apply();
+                    }
+
                     MainActivity.txt_score.setText("" + score);
 
                 }
@@ -136,7 +182,7 @@ public class GameView extends View {
 
         }else{
             if(bird.getY() > Constants.SCREEN_HEIGHT / 2){
-                bird.setDrop(-15 * Constants.SCREEN_HEIGHT / 1080);
+                bird.setDrop(-15 * Constants.SCREEN_HEIGHT / 1920);
             }
             bird.draw(canvas);
         }
@@ -149,6 +195,10 @@ public class GameView extends View {
 
         if(event.getAction() == MotionEvent.ACTION_DOWN){
             bird.setDrop(-15);
+
+            if (loadedSound){
+                int streamId = this.soundPool.play(this.soundJump, (float)0.5, (float)0.5,1, 0, 1f);
+            }
         }
 
         return true;

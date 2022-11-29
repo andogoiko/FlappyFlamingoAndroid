@@ -3,6 +3,7 @@ package com.example.pajarovoladorhacendado;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     public static RelativeLayout rl_game_over;
     public static Button btn_start;
     private GameView gv;
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +56,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mediaPlayer = MediaPlayer.create(this, R.raw.chill_eight_bits);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        mediaPlayer.start();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mediaPlayer.pause();
+    }
 }
